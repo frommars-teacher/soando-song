@@ -21,3 +21,27 @@ assert.deepEqual(revisionRange(3,'첫 줄\n다음 줄'),{start:3,end:4});
 assert.deepEqual(revisionRange(5,'\n새 연'),{start:5,end:6});
 assert.deepEqual(revisionRange(3,'짧게'),{start:3,end:3});
 console.log('PASS: selected anchor remains on the edited line and all inserted lines');
+
+const {createDocument,documentText,replaceRow}=await import('../lib/lyric-document.ts');
+const source='첫 행\n\n같은 행\n같은 행\n마지막 행';
+let doc=createDocument(source);
+const target=doc.rows[3].id;
+const edit=replaceRow(doc,target,'같은 행','같은\n행');
+assert.equal(documentText(edit.document),'첫 행\n\n같은 행\n같은\n행\n마지막 행');
+assert.equal(edit.document.rows[2].id,doc.rows[2].id);
+assert.equal(edit.document.rows.at(-1).id,doc.rows.at(-1).id);
+assert.equal(new Set(edit.document.rows.map(r=>r.id)).size,edit.document.rows.length);
+assert.throws(()=>replaceRow(doc,target,'같은 행',''),/지울/);
+assert.throws(()=>replaceRow(edit.document,target,'같은 행','바꿈'),/달라/);
+for(let i=0;i<200;i++){
+ const index=i%doc.rows.length,anchor=doc.rows[index];
+ const replacement=(anchor.text||'빈 행')+'\n새 행';
+ const before=doc.rows.map(r=>({...r}));
+ const change=replaceRow(doc,anchor.id,anchor.text.trim(),replacement);
+ assert.deepEqual(change.document.rows.slice(0,index),before.slice(0,index));
+ assert.deepEqual(change.document.rows.slice(index+2),before.slice(index+1));
+ assert.equal(documentText(change.document),before.slice(0,index).map(r=>r.text).concat(replacement,before.slice(index+1).map(r=>r.text)).join('\n'));
+ assert.equal(new Set(change.document.rows.map(r=>r.id)).size,change.document.rows.length);
+ doc=change.document;
+}
+console.log('PASS: stable row identity, repeated rows, blank rows, 200 consecutive edits without losing unrelated rows');
