@@ -47,3 +47,6 @@ export function applyTip(text:string,tip:QuickTip,replacement:string){
  if(!updated.trim())throw new Error('가사를 모두 지울 수는 없어요.');
  return updated;
 }
+
+// Keep the selected anchor and its inserted lines together until explicit rechecking.
+export function revisionRange(line:number,replacement?:string){return {start:line,end:line+(replacement===undefined?0:replacement.split('\n').length-1)}}

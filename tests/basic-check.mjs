@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {basicCheck,applyTip} from '../lib/basic-check.ts';
+import {basicCheck,applyTip,revisionRange} from '../lib/basic-check.ts';
 const text='소안도\n\n자유를 오래오래 기억하고 우리 마음을 노래하며 그 뜻을 오래 간직해요\n감사해요';
 const tip=basicCheck(text).tips.form;
 assert.equal(tip.line,3);
@@ -15,3 +15,9 @@ assert.equal(basicCheck('자유를 지켜요\n자유를 지켜요').tips.rhythm.
 const blank=basicCheck(next).tips.form;assert.ok(applyTip(next,blank,'\n'+blank.quote).includes('감사해요'));
 assert.deepEqual(basicCheck(text),basicCheck(text));
 console.log('PASS: revision bounds, stale targets, blank lines, preservation, syllable imbalance, repeated endings and refrain');
+
+assert.deepEqual(revisionRange(3),{start:3,end:3});
+assert.deepEqual(revisionRange(3,'첫 줄\n다음 줄'),{start:3,end:4});
+assert.deepEqual(revisionRange(5,'\n새 연'),{start:5,end:6});
+assert.deepEqual(revisionRange(3,'짧게'),{start:3,end:3});
+console.log('PASS: selected anchor remains on the edited line and all inserted lines');
