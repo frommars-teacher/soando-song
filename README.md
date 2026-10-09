@@ -98,3 +98,6 @@ D1 스키마는 db/schema.ts, 마이그레이션은 drizzle/*.sql. Sites 배포 
 로컬 Pages 빌드: `pnpm exec vite build --config vite.pages.config.ts`. 정적 출력은 `pages-dist/`이며 상대 경로 assets와 teacher.html을 사용하므로 저장소 하위 경로에 배포할 수 있다. 현재 Pages 프런트엔드는 기존 배포의 Cloudflare Worker 서버를 기본 API 주소로 연결한다. 별도 Cloudflare 계정으로 이전하면 COACH_API_ORIGIN 변수로 서버 주소를 교체한다. APP_ORIGIN은 GitHub Pages origin만 CORS 허용하며 기존 서버의 동일 출처도 허용한다. GitHub Actions/Cloudflare 계정 접근과 Pages 실제 게시 및 Worker 배포는 별도 검증 전까지 미완료이다.
 
 검증: Pages 정적 빌드 및 TypeScript, 서버 모의 테스트 통과. 브라우저 시각·실기기 검증 및 실제 AI 호출은 미검증 상태를 유지한다.
+
+## API 없는 기본 점검
+직접 입력 → 기본 가사 점검 → 직접 수정 → 재점검 → 완성·복사. lib/basic-check.ts에서 로컬 계산하며 외부 API를 호출하지 않는다. 각 기준의 점수 산식은 화면에 공개한다. 작품의 가치나 역사적 사실에 대한 평가가 아니며, 자동 첨삭과 사진 OCR은 제공하지 않는다.
