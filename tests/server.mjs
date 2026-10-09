@@ -10,7 +10,10 @@ const counts=new Map();
 const DB={prepare(sql){return {bind(...v){return {async run(){if(sql.startsWith('DELETE'))return {};if(counts.has(v[0]))return {meta:{changes:0}};counts.set(v[0],1);return {meta:{changes:1}}},async first(){const n=counts.get(v[0])||0;if(n>=v[2])return null;counts.set(v[0],n+1);return {count:n+1}}}}}}};
 globalThis.soandoTestEnv={DB};
 for(const [src,dest] of [['lib/coach.ts','coach.mjs'],['lib/runtime.ts','runtime.mjs'],['app/api/coach/route.ts','route.mjs']]){let source=await readFile(src,'utf8');source=source.replace("from 'zod'",`from ${JSON.stringify(require.resolve('zod'))}`).replace("import { env } from 'cloudflare:workers';","const env=globalThis.soandoTestEnv;").replace("@/lib/runtime","./runtime.mjs").replace("@/lib/coach","./coach.mjs");await writeFile(join(dir,dest),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText)}
-const {POST}=await import(join(dir,'route.mjs'));
+const {POST,OPTIONS}=await import(join(dir,'route.mjs'));
+globalThis.soandoTestEnv.APP_ORIGIN='https://frommars-teacher.github.io';
+assert.equal((await OPTIONS(new Request('https://example.com/api/coach',{headers:{Origin:'https://frommars-teacher.github.io'}}))).status,204);
+assert.equal((await OPTIONS(new Request('https://example.com/api/coach',{headers:{Origin:'https://untrusted.example'}}))).status,403);
 let calls=0;const actualFetch=globalThis.fetch;let ai={};globalThis.fetch=async()=>{calls++;return Response.json({choices:[{message:{content:JSON.stringify(ai)}}]})};
 const payload=(extra={})=>({operation:'evaluate',lyrics:'소안도의 바람 속에\n기억하는 우리 마음',code:'class-test',session:crypto.randomUUID(),requestId:crypto.randomUUID(),...extra});
 const req=b=>new Request('https://example.com/api/coach',{method:'POST',headers:{Origin:'https://example.com','Content-Type':'application/json'},body:JSON.stringify(b)});

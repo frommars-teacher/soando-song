@@ -95,6 +95,6 @@ D1 스키마는 db/schema.ts, 마이그레이션은 drizzle/*.sql. Sites 배포 
 7. Actions에서 Pages 워크플로를 실행한다. 프런트엔드는 `/api/status`와 `/api/coach`를 위 서버 주소로 호출한다.
 8. ZDR 및 학교 검토 완료 뒤 Cloudflare secrets에 OPENAI_API_KEY, CLASSROOM_CODE를 등록하고 승인 플래그를 설정·재배포한다. 서버 `APP_ORIGIN`은 실제 GitHub Pages 계정 origin과 정확히 일치해야 한다. 기본값은 `https://frommars-teacher.github.io`이다.
 
-로컬 Pages 빌드: `pnpm exec vite build --config vite.pages.config.ts`. 정적 출력은 `pages-dist/`이며 상대 경로 assets와 teacher.html을 사용하므로 저장소 하위 경로에 배포할 수 있다. 실제 Worker 주소가 설정되지 않은 Pages 화면은 AI가 준비되지 않았다고 안내한다. GitHub Actions/Cloudflare 계정 접근과 Pages 실제 게시 및 Worker 배포는 별도 검증 전까지 미완료이다.
+로컬 Pages 빌드: `pnpm exec vite build --config vite.pages.config.ts`. 정적 출력은 `pages-dist/`이며 상대 경로 assets와 teacher.html을 사용하므로 저장소 하위 경로에 배포할 수 있다. 현재 Pages 프런트엔드는 기존 배포의 Cloudflare Worker 서버를 기본 API 주소로 연결한다. 별도 Cloudflare 계정으로 이전하면 COACH_API_ORIGIN 변수로 서버 주소를 교체한다. APP_ORIGIN은 GitHub Pages origin만 CORS 허용하며 기존 서버의 동일 출처도 허용한다. GitHub Actions/Cloudflare 계정 접근과 Pages 실제 게시 및 Worker 배포는 별도 검증 전까지 미완료이다.
 
 검증: Pages 정적 빌드 및 TypeScript, 서버 모의 테스트 통과. 브라우저 시각·실기기 검증 및 실제 AI 호출은 미검증 상태를 유지한다.

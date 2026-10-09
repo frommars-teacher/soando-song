@@ -1,11 +1,11 @@
 import {z} from 'zod';
-import {runtime,enabled,reply} from '@/lib/runtime';
+import {runtime,enabled,reply,corsHeaders} from '@/lib/runtime';
 import {evaluation,ocr,system,checkGrounding} from '@/lib/coach';
 const input=z.object({operation:z.enum(['evaluate','ocr']),lyrics:z.string().max(3000).optional(),image:z.string().max(4200000).optional(),intent:z.string().max(30).optional(),mood:z.string().max(30).optional(),code:z.string().max(100),session:z.string().uuid(),requestId:z.string().uuid()}).strict();
 export async function POST(req:Request){
  // Fail closed BEFORE reading any student's request body.
  if(!enabled())return reply({error:'학생용 AI가 아직 준비 중이에요. 가사를 직접 다듬고 완성할 수 있어요.'},503);
- const origin=req.headers.get('origin');if(origin!==(runtime().APP_ORIGIN||new URL(req.url).origin))return reply({error:'허용되지 않은 요청이에요.'},403);
+ const origin=req.headers.get('origin');if(origin!==new URL(req.url).origin&&origin!==runtime().APP_ORIGIN)return reply({error:'허용되지 않은 요청이에요.'},403);
  if(!req.headers.get('content-type')?.includes('application/json'))return reply({error:'지원하지 않는 입력이에요.'},415);
  const e=runtime();
  try{
@@ -33,3 +33,5 @@ export async function POST(req:Request){
  }catch{return reply({error:'응답을 확인하지 못했어요. 가사는 그대로 있어요. 다시 시도해 주세요.'},502)}
 }
 function toSchema(op:string){const str={type:'string'};const arr=(items:unknown)=>({type:'array',items});const obj=(properties:Record<string,unknown>)=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});const card=obj({grade:{type:'string',enum:['좋아요','조금 다듬어 봐요','보완이 필요해요']},strength:str,improvement:str,quote:str,explanation:str});return op==='ocr'?obj({text:str,uncertain:arr(str)}):obj({form:card,content:card,rhythm:card,priority:str,revisedLyrics:str,changes:arr(obj({before:str,after:str,reason:str})),reasons:arr(str),factChecks:arr(str)})}
+
+export async function OPTIONS(req:Request){const origin=req.headers.get('Origin');return new Response(null,{status:origin===runtime().APP_ORIGIN?204:403,headers:corsHeaders()})}
