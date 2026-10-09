@@ -1,0 +1,20 @@
+{
+  "name": "soando-song-coach",
+  "main": "index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "APP_ORIGIN": "https://frommars-teacher.github.io",
+    "OPENAI_MODEL": "gpt-4.1-mini",
+    "STUDENT_AI_ENABLED": "false",
+    "ZDR_VERIFIED": "false",
+    "POLICY_REVIEWED": "false",
+    "DAILY_REQUEST_LIMIT": "100"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "soando-song-quota",
+    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+    "migrations_dir": "../drizzle"
+  }]
+}
