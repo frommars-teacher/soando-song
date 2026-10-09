@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {basicCheck,applyTip} from '../lib/basic-check.ts';
+const text='소안도\n\n자유를 오래오래 기억하고 우리 마음을 노래하며 그 뜻을 오래 간직해요\n감사해요';
+const tip=basicCheck(text).tips.form;
+assert.equal(tip.line,3);
+const next=applyTip(text,tip,'자유를 오래오래 기억하고\n우리 마음을 노래하며 그 뜻을 오래 간직해요');
+assert.equal(next.split('\n')[0],'소안도');assert.equal(next.split('\n').at(-1),'감사해요');
+assert.throws(()=>applyTip(next,tip,'다른 예시'),/달라졌/);
+assert.throws(()=>applyTip('가'.repeat(2999),{line:1,quote:'가'.repeat(2999),action:'',example:'',keep:false},'가'.repeat(3001)),/3,000/);
+assert.throws(()=>basicCheck('가'.repeat(3001)),/3,000/);
+const r=basicCheck('자유를 지켜요\n감사를 전해요\n소안도의 마음을 기억하며 우리는 노래해요');
+assert.equal(r.tips.rhythm.rhythmIssue,'imbalance');assert.ok(r.tips.rhythm.action.includes('음절'));
+assert.equal(basicCheck('자유를 노래해요\n소안도를 기억해요').tips.rhythm.rhythmIssue,'ending');
+assert.equal(basicCheck('자유를 지켜요\n자유를 지켜요').tips.rhythm.rhythmIssue,'repeat');
+const blank=basicCheck(next).tips.form;assert.ok(applyTip(next,blank,'\n'+blank.quote).includes('감사해요'));
+assert.deepEqual(basicCheck(text),basicCheck(text));
+console.log('PASS: revision bounds, stale targets, blank lines, preservation, syllable imbalance, repeated endings and refrain');
