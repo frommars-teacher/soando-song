@@ -45,3 +45,20 @@ for(let i=0;i<200;i++){
  doc=change.document;
 }
 console.log('PASS: stable row identity, repeated rows, blank rows, 200 consecutive edits without losing unrelated rows');
+
+const {feedbackSequence,singingSplits}=await import('../lib/feedback-sequence.ts');
+const orderedText='소안도를 기억해요\n그 마음이 고마워요\n우리는 자유를 지키려고 힘쓴 사람들의 마음을 오래오래 잊지 않고 기억하며 노래할 거예요\n끝 행을 노래해요';
+const orderedDoc=createDocument(orderedText),queue=feedbackSequence(orderedDoc);
+assert.deepEqual(queue.map(t=>orderedDoc.rows.findIndex(r=>r.id===t.rowId)),[1,2,3]);
+assert.equal(new Set(queue.map(t=>t.rowId)).size,queue.length);
+for(const item of queue)for(const ex of item.examples){assert.ok(ex.text.trim());assert.ok(!ex.text.includes('[내'));}
+for(const split of singingSplits(orderedDoc.rows[2].text))assert.equal(split.replace(/\s+/g,''),orderedDoc.rows[2].text.replace(/\s+/g,''));
+const inserted=replaceRow(orderedDoc,queue[1].rowId,queue[1].quote,queue[1].examples[0].text).document;
+assert.equal(inserted.rows.find(r=>r.id===queue[2].rowId).text,'끝 행을 노래해요');
+const evaluated=basicCheck(orderedText).result;
+evaluated.changes=[{before:'끝 행을 노래해요',after:'끝 행을\n노래해요',reason:'숨 쉬는 곳을 나눴어요.'},{before:'소안도를 기억해요',after:'소안도를 기억해요\n소안도를 기억해요',reason:'후렴으로 반복해요.'}];
+const aiQueue=feedbackSequence(orderedDoc,evaluated);
+assert.deepEqual(aiQueue.map(t=>t.rowId),[orderedDoc.rows[0].id,orderedDoc.rows[3].id]);
+assert.equal(aiQueue[0].examples[0].text,'소안도를 기억해요\n소안도를 기억해요');
+assert.deepEqual(feedbackSequence(createDocument('바람이 불어요\n파도가 들려요')).map(t=>t.rowId),['1']);
+console.log('PASS: source-ordered feedback, merged row issues, grounded examples, stable next anchor and sorted AI changes');
